@@ -33,7 +33,7 @@ const loginModule = {
     login({ dispatch, commit }, email) {
       axios.get(`http://localhost:3000/api/users?email=${email}`)
         .then(response => {
-          dispatch('resolveLogin', { id: response.id, adminStatus: false});
+          dispatch('resolveLogin', { id: response.data.id, adminStatus: false});
         })
         .catch(error => {
           if (error.response) {
@@ -44,7 +44,7 @@ const loginModule = {
     signUp({ dispatch, commit }, { email, name }){
       axios.post(`http://localhost:3000/api/users?email=${email}&name=${name}`)
         .then(response => {
-          dispatch('resolveLogin', { id: response.id, adminStatus: false});
+          dispatch('resolveLogin', { id: response.data.id, adminStatus: false});
         })
         .catch(error => {
           if (error.response) {

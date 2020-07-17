@@ -21,13 +21,13 @@ export default {
     components: {
         Item
     },
-    data() {
-        return {
-            items: []
+    computed: {
+        items(){
+            return this.$store.getters.getItems;
         }
     },
     mounted() {
-    this.getStock();    
+        this.$store.dispatch('loadItems');    
     },
     methods: {
         getStock() {

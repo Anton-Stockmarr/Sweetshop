@@ -13,13 +13,9 @@
 
 export default {
   name: 'AdminSignIn',
-  data() {
-    return {
-    }
-  },
   methods: {
-    login() {
-      this.$emit('adminLogin');
+    login(){
+      this.$store.dispatch('adminLogin');
     }
   },
   computed: {

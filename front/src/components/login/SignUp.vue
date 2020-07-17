@@ -4,7 +4,7 @@
     <h3 v-show="error">{{error}}</h3>
     <input type="text" v-model="email" placeholder="Email">
     <input type="text" v-model="name" placeholder="Name">
-    <button @click="signUp()">Sign Up</button>
+    <button @click="signUp">Sign Up</button>
   </div>
 </template>
 
@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     signUp() {
-      this.$emit('signUp',this.email,this.name);
+      this.$store.dispatch('signUp',{ email: this.email, name: this.name});
     }
   },
   computed: {

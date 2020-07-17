@@ -3,7 +3,7 @@
     <h1>Login</h1>
     <h3 v-show="error">{{error}}</h3>
     <input type="text" v-model="email" placeholder="mail">
-    <button @click="login()">login</button>
+    <button @click="login">login</button>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ export default {
   },
   methods: {
     login() {
-      this.$emit('login',this.email);
+      this.$store.dispatch('login',this.email);
     }
   },
   computed: {
