@@ -8,14 +8,14 @@
 
 
 <script>
-import axios from 'axios'
-import SignIn from '../components/SignIn'
-import SignUp from '../components/SignUp'
-import AdminSignIn from '../components/AdminSignIn'
-
+import SignIn from '../components/login/SignIn'
+import SignUp from '../components/login/SignUp'
+import AdminSignIn from '../components/login/AdminSignIn'
+import store from '../store'
 
 export default {
   name: 'Login',
+  store: store,
   components: {
     SignIn,
     SignUp,
@@ -23,48 +23,15 @@ export default {
   },
   methods: {
     login(email) {
-      axios.get(`http://localhost:3000/api/users?email=${email}`)
-        .then(response => {
-          let adminStatus = false;
-          if (this.setUser(response.data, adminStatus)){
-            this.$router.push({ path: `/home` });
-          }
-        })
-        .catch(error => {
-          if (error.response) {
-            this.$store.dispatch('setError',{ name: 'signInError', message: error.response.data});
-          }
-        });
+      this.$store.dispatch('login',email);
     },
     signUp(email, name) {
-      axios.post(`http://localhost:3000/api/users?email=${email}&name=${name}`)
-        .then(response => {
-          let adminStatus = false;
-          if (this.setUser(response.data, adminStatus)){
-            this.$router.push({ path: `/home` });
-          }
-        })
-        .catch(error => {
-          if (error.response) {
-            this.$store.dispatch('setError',{ name: 'signUpError', message: error.response.data});
-          }
-        });
+      this.$store.dispatch('signUp',{ email: email, name: name});
     },
     adminLogin(){
-      let adminStatus = true;
-      if (this.setUser('',adminStatus)){
-        this.$router.push({ path: `/home` });
-      }
-    },
-    setUser(userData, adminStatus) {
-      this.$store.dispatch('setAdminStatus',  adminStatus);
-      if (!adminStatus) {
-        this.$store.dispatch('setUserId', userData.id );
-      }
-      this.$store.dispatch('setLoggedIn', true );
-      return true;      
+      this.$store.dispatch('adminLogin');
     }
- }
+  }
 }
 </script>
 

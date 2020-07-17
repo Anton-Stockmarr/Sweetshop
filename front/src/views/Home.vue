@@ -1,52 +1,27 @@
 <template>
   <div class="home">
-    <div v-if="this.admin==='f'">
-      Place order
-      <div :key="item.id" v-for="item in items">
-        <Item v-bind="item"/>
-      </div>
-      In basket:
-      <button>Order</button>
-      <button>View orders</button>
+    <div v-if="!admin">
+      <CustomerHomePage />
     </div>
-    <div v-if="this.admin==='t'">
-      Total stock:
-      <div :key="item.id" v-for="item in items">
-        <Item v-bind="item" :admin="this.admin"/>
-      </div>
-      Stock value:
-      Add Item:
+    <div v-if="admin">
+      <AdminHomePage />
     </div>
   </div>
 </template>
 
 <script>
-import Item from '../components/Item'
-import axios from 'axios'
+import CustomerHomePage from '../components/home/CustomerHomePage'
+import AdminHomePage from '../components/home/AdminHomePage'
 
 export default {
   name: 'Home',
   components: {
-    Item
+    CustomerHomePage,
+    AdminHomePage,
   },
-  data() {
-    return {
-      items: []
-    }
-  },
-  props: {
-    userId: String,
-    admin: String
-  },
-  mounted() {
-    this.getStock();    
-  },
-  methods: {
-    getStock() {
-        axios.get(`http://localhost:3000/api/items`)
-          .then(response => this.items = response.data)
-          .catch(err => console.log(err));
-
+  computed: {
+    admin() {
+      return this.$store.getters.getAdminStatus;
     }
   }
 }

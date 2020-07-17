@@ -2,8 +2,8 @@
   <div class="admin-sign-in">
     <h1>Login as shop owner</h1>
     <h2>No authentication needed, the internet is build on trust</h2>
-    <h3 v-show="errorStatus">{{errorMessage}}</h3>
-    <button @click="login()">login</button>
+    <h3 v-show="error">{{error}}</h3>
+    <button @click="login">login</button>
   </div>
 </template>
 
@@ -13,10 +13,6 @@
 
 export default {
   name: 'AdminSignIn',
-  props: {
-    errorStatus : Boolean,
-    errorMessage : String
-  },
   data() {
     return {
     }
@@ -25,7 +21,13 @@ export default {
     login() {
       this.$emit('adminLogin');
     }
+  },
+  computed: {
+    error() {
+      return this.$store.getters.getError('adminSignInError');
+    }
   }
+
 }
 </script>
 
