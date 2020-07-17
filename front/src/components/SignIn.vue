@@ -1,8 +1,8 @@
 <template>
   <div class="sign-in">
-    <h1>Login with email</h1>
-    <h3 v-show="errorStatus">{{errorMessage}}</h3>
-    <input type="text" v-model="email">
+    <h1>Login</h1>
+    <h3 v-show="error">{{error}}</h3>
+    <input type="text" v-model="email" placeholder="mail">
     <button @click="login()">login</button>
   </div>
 </template>
@@ -13,10 +13,6 @@
 
 export default {
   name: 'SignIn',
-  props: {
-    errorStatus : Boolean,
-    errorMessage : String
-  },
   data() {
     return {
       email: ''
@@ -26,6 +22,11 @@ export default {
     login() {
       this.$emit('login',this.email);
     }
+  },
+  computed: {
+    error() {
+      return this.$store.getters.getError('signInError');
+    }
   }
 }
 </script>
@@ -34,6 +35,10 @@ export default {
 .sign-in {
   border: black 1px solid;
   background-color: #6BBAA7;
+}
+
+.sign-in input {
+  margin: 5px;
 }
 
 

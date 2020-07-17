@@ -1,8 +1,8 @@
 <template>
   <div class="login">
-    <SignIn :errorStatus="signInError.status" :errorMessage="signInError.message" v-on:login="login(email)"/>
-    <SignUp :errorStatus="signUpError.status" :errorMessage="signUpError.message" v-on:signUp="login(email,name)"/>
-    <AdminSignIn :errorStatus="adminError.status" :errorMessage="adminError.message" v-on:signUp="login()"/>
+    <SignIn v-on:login="login"/>
+    <SignUp v-on:signUp="signUp"/>
+    <AdminSignIn v-on:adminLogin="adminLogin"/>
   </div>
 </template>
 
@@ -13,6 +13,7 @@ import SignIn from '../components/SignIn'
 import SignUp from '../components/SignUp'
 import AdminSignIn from '../components/AdminSignIn'
 
+
 export default {
   name: 'Login',
   components: {
@@ -20,45 +21,47 @@ export default {
     SignUp,
     AdminSignIn
   },
-  data() {
-    return {
-      email: '',
-      userId: '123',
-      admin: 'false',
-      signInError: {
-        status: false,
-        message: ''
-      },
-      signUpError: {
-        status: false,
-        message: ''
-      },
-      adminError: {
-        status: false,
-        message: ''
-      }
-    }
-  },
   methods: {
-    login() {
-      return axios.get(`http://localhost:3000/api/users?email=${this.email}`)
-      .then(response => {
-        if (this.setUserId(response.data)){
-          this.$router.push({ path: `/home/${this.userId}/${this.admin ? 't' : 'f'}` });
-        }
-      })
-      .catch(error => {
-        if (error.response) {
-          if (error.response.status == 404) {
-            this.error.status = true;
-            this.error.message = "User not found";
+    login(email) {
+      axios.get(`http://localhost:3000/api/users?email=${email}`)
+        .then(response => {
+          let adminStatus = false;
+          if (this.setUser(response.data, adminStatus)){
+            this.$router.push({ path: `/home` });
           }
-        }
-      });
+        })
+        .catch(error => {
+          if (error.response) {
+            this.$store.dispatch('setError',{ name: 'signInError', message: error.response.data});
+          }
+        });
     },
-    setUserId(userData) {
-      this.userId = userData.id;
-      this.admin = userData.admin;
+    signUp(email, name) {
+      axios.post(`http://localhost:3000/api/users?email=${email}&name=${name}`)
+        .then(response => {
+          let adminStatus = false;
+          if (this.setUser(response.data, adminStatus)){
+            this.$router.push({ path: `/home` });
+          }
+        })
+        .catch(error => {
+          if (error.response) {
+            this.$store.dispatch('setError',{ name: 'signUpError', message: error.response.data});
+          }
+        });
+    },
+    adminLogin(){
+      let adminStatus = true;
+      if (this.setUser('',adminStatus)){
+        this.$router.push({ path: `/home` });
+      }
+    },
+    setUser(userData, adminStatus) {
+      this.$store.dispatch('setAdminStatus',  adminStatus);
+      if (!adminStatus) {
+        this.$store.dispatch('setUserId', userData.id );
+      }
+      this.$store.dispatch('setLoggedIn', true );
       return true;      
     }
  }

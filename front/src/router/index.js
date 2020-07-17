@@ -9,10 +9,9 @@ Vue.use(VueRouter)
 
   const routes = [
   {
-    path: '/home/:userId/:admin',
+    path: '/home',
     name: 'Home',
     component: Home,
-    props: true
   },
   {
     path: '/login',

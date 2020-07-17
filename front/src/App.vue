@@ -9,9 +9,11 @@
 export default {
   name: 'App',
   created() {
-    if (this.$router.currentRoute.path !== '/login'){
-      this.$router.push('/login');
-    }
+    if (!this.$store.getters.getLoggedIn) {
+      if (this.$router.currentRoute.path !== '/login'){
+        this.$router.push('/login');
+      }
+    } 
   }
 }
 </script>

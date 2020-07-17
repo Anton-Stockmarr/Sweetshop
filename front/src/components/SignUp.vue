@@ -1,9 +1,9 @@
 <template>
   <div class="sign-up">
     <h1>Sign up</h1>
-    <h3 v-show="errorStatus">{{errorMessage}}</h3>
-    <input type="text" v-model="email">
-    <input type="text" v-model="name">
+    <h3 v-show="error">{{error}}</h3>
+    <input type="text" v-model="email" placeholder="Email">
+    <input type="text" v-model="name" placeholder="Name">
     <button @click="signUp()">Sign Up</button>
   </div>
 </template>
@@ -14,10 +14,6 @@
 
 export default {
   name: 'SignUp',
-  props: {
-    errorStatus : Boolean,
-    errorMessage : String
-  },
   data() {
     return {
       email: '',
@@ -28,7 +24,13 @@ export default {
     signUp() {
       this.$emit('signUp',this.email,this.name);
     }
+  },
+  computed: {
+    error() {
+      return this.$store.getters.getError('signUpError');
+    }
   }
+
 }
 </script>
 
@@ -37,5 +39,9 @@ export default {
 .sign-up {
   border: black 1px solid;
   background-color: #F8A100;
+}
+
+.sign-up input {
+  margin: 5px;
 }
 </style>

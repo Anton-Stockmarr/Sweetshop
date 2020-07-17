@@ -34,4 +34,9 @@ export default {
   border: black 1px solid;
   background-color: #6C648B;
 }
+
+.admin-sign-in button {
+  width: 100px;
+  
+}
 </style>
