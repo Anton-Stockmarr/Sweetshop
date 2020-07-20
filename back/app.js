@@ -3,9 +3,11 @@ const app = express();
 const db = require('./database/connection');
 const port = 3000;
 
+app.use(express.json());
+
 function isUniqueConstraintError(err){
     if (!err) return false;
-    let uniqueError = `duplicate key value violates unique constraint`;
+    const uniqueError = `duplicate key value violates unique constraint`;
     return err.message.indexOf(uniqueError) !== -1;
 }
 
@@ -16,7 +18,7 @@ app.listen(port, () => {
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:8080");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    res.header("Access-Control-Allow-Methods", "get");
+    res.header("Access-Control-Allow-Methods", "get, post");
     next();
   });
 
@@ -56,19 +58,19 @@ app.post('/api/users', (req,res,next) => {
     const name = req.query.name;
     if (!email || !name){
         res.status(400).send('Empty input');
-        return;
+        return next();
     }
-    let regex = /^[^@]+@[^\.]+\..+$/;
+    const regex = /^[^@]+@[^\.]+\..+$/;
     if (!regex.test(email)){
         res.status(400).send('Invalid mail');
-        return;
+        return next();
     }
 
     db('Users').returning('id').insert({ 'name': name, 'email': email})
         .then( data => {
             console.log(data);
             res.status(200).send(data);
-            return;
+            return next();
         })
         .catch(err => {
             console.log(err.message);
@@ -77,6 +79,49 @@ app.post('/api/users', (req,res,next) => {
             } else {
                 res.status(500).send("An error occured");
             }
-            return;   
+            return next();   
         });
-})
+});
+
+
+app.get('/api/orders', (req,res,next) => {
+    const user = req.query.user;
+
+    if (!user){
+        res.status(400).send('Empty input');
+        return next();
+    }
+
+    
+
+    res.status(500).send('not really implemented yet');
+    return next();
+});
+
+app.post('/api/orders', (req,res,next) => {
+    console.log(`req: POST ${req.url}`);
+    console.log(`body: ${JSON.stringify(req.body.data)}`);
+    const user = req.body.data.user;
+    const items = req.body.data.items;
+
+    if (!user || !items){
+        res.status(400).send('user and items must be defined to place an order');
+        return next();
+    }
+    if (items.length === 0) {
+        res.status(400).send('Cannot place an empty order');
+        return next();
+    }
+    db('Temporary_Order').truncate()
+        .then(() => db('Temporary_Order').insert(items))
+        .then(() => db.raw(`CALL addOrder(${user}, 0)`))
+        .then((result) => {
+            res.status(200).send(result.rows[0].orderid.toString());
+            return next();
+            })
+        .catch( err => {
+            console.log(err.message);
+            res.status(500).send("An error occured");     
+            return next();
+        });
+});

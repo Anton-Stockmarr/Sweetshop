@@ -7,12 +7,18 @@ const itemModule = {
         currentOrder: [],
         orders: [],
         errors: {
-            loadItemsError: ''
+            loadItemsError: '',
+            loadOrdersError: '',
+            changeOrderError: '',
+            placeOrderError: ''
         }
     },
     mutations: {
         setItems(state, items){
             state.items = items;
+        },
+        setOrders(state, orders) {
+            state.orders = orders;
         },
         addItem(state, item) {
             state.items = [...state.items,item];
@@ -42,45 +48,81 @@ const itemModule = {
                 }
             }
         },
+        moveCurrentOrderToOrderList(state, id) {
+            const newOrder = {id: id, order: state.currentOrder};
+            state.orders = [...state.orders,newOrder];
+            state.currentOrder = [];
+        },
         setError(state, { name, message }) {
             state.errors[name] = message;
-        },    
+        },
+        clearError(state, { name }) {
+            state.errors[name] = '';
+        },
     },
     actions: {
         loadItems({ commit }){
             axios.get(`http://localhost:3000/api/items`)
-            .then(response => commit('setItems', response.data))
+            .then(response => {
+                commit('setItems', response.data);
+                commit('clearError', 'loadItemsError');
+            })
             .catch(error => {
               if (error.response) {
                 commit('setError',{ name: 'loadItemsError', message: error.response.data});
               }
           });    
         },
-        loadOrders(){
-            return;
+        loadOrders({ commit, rootGetters }){
+            const user = rootGetters.getUserId;
+            axios.get(`http://localhost:3000/api/orders?user=${user}`)
+            .then(response => {
+                commit('setOrders', response.data);
+                commit('clearError', 'loadOrdersError');
+            })
+            .catch(error => {
+              if (error.response) {
+                commit('setError',{ name: 'loadOrdersError', message: error.response.data});
+              }
+          });    
         },
         changeCurrentOrder({ commit, getters }, { changedItem, amount }){
             if (amount > 0) {
                 commit('addToOrder', { newItem: changedItem, amount: amount });
+                commit('clearError', 'changeOrderError');
             }
             else if (amount < 0) {
-                if (!getters.currentOrder.some(item => item.id === changedItem.id)){
+                if (!getters.getCurrentOrder.some(item => item.id === changedItem.id)){
                     commit('setError', { name: 'changeOrderError', message: 'Tried to remove more than was in the order'});
                 } else {
                     commit('removeFromOrder', { changedItem: changedItem, amount: -amount });
+                    commit('clearError', 'changeOrderError');
                 }
             } else {
                 commit('setError', { name: 'changeOrderError', message: `cannot change order by ${amount}`});
             }
         },
-/*        placeOrder({ commit, getters }){
-            axios.post({ url: `http://localhost:3000/api/orders`,
-                data: getters.currentOrder
+        placeOrder({ commit, getters, rootGetters }){
+            let body = {
+                user: rootGetters.getUserId,
+                items: []
+            };
+            const order = getters.getCurrentOrder;
+            body.items = order.map(item => {
+                return {itemId: item.id, amount: item.quantity};
+            });
+            axios.post('http://localhost:3000/api/orders', {
+                data: body
                 })
                 .then(response => {
-                    commit('clearOrder')
+                    console.log(response.data);
+                    commit('moveCurrentOrderToOrderList',response.data);
+                    commit('clearError', 'placeOrderError');
+                })
+                .catch(error => {
+                    commit('setError', { name: 'placeOrderError', message: error.response.data });
                 });
-        }*/
+        }
     },
     getters: {
         getItems(state){
@@ -91,7 +133,10 @@ const itemModule = {
         },
         getOrders(state){
             return state.orders;
-        }
+        },
+        getItemError(state) {
+            return name => state.errors[name];
+          },      
     }
 };
 

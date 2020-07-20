@@ -72,7 +72,7 @@ const loginModule = {
     getLoggedIn(state){
       return state.loggedIn;
     },
-    getError(state) {
+    getLoginError(state) {
       return name => state.errors[name];
     },
   }

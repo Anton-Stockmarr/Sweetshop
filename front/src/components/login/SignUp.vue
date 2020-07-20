@@ -27,7 +27,7 @@ export default {
   },
   computed: {
     error() {
-      return this.$store.getters.getError('signUpError');
+      return this.$store.getters.getLoginError('signUpError');
     }
   }
 

@@ -20,7 +20,7 @@ export default {
   },
   computed: {
     error() {
-      return this.$store.getters.getError('adminSignInError');
+      return this.$store.getters.getLoginError('adminSignInError');
     }
   }
 

@@ -1,7 +1,8 @@
 <template>
   <div class="item">
     {{name}}: {{description}}, {{quantity}}
-    <button @click="addToOrder">Add</button>
+    <button v-if="itemType==='stockItem'" @click="changeOrder(1)">Add</button>
+    <button v-if="itemType==='orderItem'" @click="changeOrder(-1)">Remove</button>
   </div>
 </template>
 
@@ -9,6 +10,7 @@
 export default {
   name: 'Item',
   props: {
+    itemType: String,
     id: Number,
     currency: String,
     description: String,
@@ -17,7 +19,7 @@ export default {
     quantity: Number,
   },
   methods: {
-    addToOrder() {
+    changeOrder(amount) {
       this.$store.dispatch('changeCurrentOrder', 
         {changedItem:
           {id: this.id,
@@ -27,7 +29,7 @@ export default {
           price: this.price,
           quantity: this.quantity
           }, 
-        amount: 1
+        amount: amount
       });
     }
   }
