@@ -3,6 +3,8 @@
     {{name}}: {{description}}, {{quantity}}
     <button v-if="itemType==='stockItem'" @click="changeOrder(1)">Add</button>
     <button v-if="itemType==='orderItem'" @click="changeOrder(-1)">Remove</button>
+    <button v-if="admin" @click="removeItem">Remove Item</button>
+    <div v-if="removeItemError">{{removeItemError}}</div>
   </div>
 </template>
 
@@ -18,6 +20,14 @@ export default {
     price: Number,
     quantity: Number,
   },
+  computed: {
+    admin() {
+      return this.$store.getters.getAdminStatus;
+    },
+    removeItemError() {
+      return this.$store.getters.getStockError('removeItemError');
+    }
+  },
   methods: {
     changeOrder(amount) {
       this.$store.dispatch('changeCurrentOrder', 
@@ -31,6 +41,9 @@ export default {
           }, 
         amount: amount
       });
+    },
+    removeItem() {
+      this.$store.dispatch('removeItem', this.id);
     }
   }
 }

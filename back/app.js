@@ -23,19 +23,79 @@ app.use(function(req, res, next) {
   });
 
 
-app.get('/api/items', (req,res) => {
-    db.select().from('Items').then( data => {
+app.get('/api/items', (req,res, next) => {
+    console.log(`req: GET ${req.url}`);
+    db('Items').where('archived','FALSE').select('id','name','description','price','currency','quantity').then( data => {
         res.send(data);
+        return next();
     });
-})
+});
+
+app.post('/api/items/add', (req,res, next) => {
+    console.log(`req: POST ${req.url}`);
+    const item = req.body.data;
+    if (!item){
+        res.status(400).send('Missing data');
+        return next();
+    }
+    if (!item.name || !item.description || !item.price || !item.currency || !item.quantity){
+        res.status(400).send('Some fields were not defined');
+        return next();    
+    }
+
+    db('Items').returning('id').insert({
+        'name': item.name,
+        'description': item.description,
+        'price': item.price,
+        "currency": item.currency,
+        'quantity': item.quantity
+    })
+        .then( data => {
+            res.status(200).send(data[0].toString());
+            return next();
+        })
+        .catch(err => {
+            console.log(err.message);
+            res.status(500).send("An error occured");
+            return next();   
+        });
+});
+
+
+app.post('/api/items/remove', (req,res, next) => {
+    console.log(`req: POST ${req.url}`);
+    const item = req.query.item;
+    if (!item) {
+        res.status(400).send('No item specified');
+        return next();
+    }
+    db('Items').where("id",item).update({'archived': 'TRUE'})
+        .then(() => {
+            res.status(200).send();
+            return next();
+        })
+        .catch(err => {
+            console.log(err.message);
+            res.status(500).send("An error occured");
+            return next();
+        });
+});
+
+app.post('/api/items/quantity', (req,res, next) => {
+    console.log(`req: POST ${req.url}`);
+
+
+    res.status(500).send('not implemented yet');
+    return next();
+});
 
 
 app.get('/api/users', (req,res,next) => {
-    const email = req.query.email;
     console.log(`req: GET ${req.url}`);
+    const email = req.query.email;
     if (!email) {
         res.status(400).send('Empty email input');
-        return;
+        return next();
     }
     db('Users').where('email',email).select('id')
         .then( data => {
@@ -44,13 +104,14 @@ app.get('/api/users', (req,res,next) => {
             } else {
                 res.send(data[0]);
             }
+            return next();
         })
         .catch(err => {
             console.log(err.message);
             res.status(500).send("An error occured");
-            return;
+            return next();
         });
-})
+});
 
 app.post('/api/users', (req,res,next) => {
     console.log(`req: POST ${req.url}`);
@@ -68,7 +129,6 @@ app.post('/api/users', (req,res,next) => {
 
     db('Users').returning('id').insert({ 'name': name, 'email': email})
         .then( data => {
-            console.log(data);
             res.status(200).send(data);
             return next();
         })
@@ -85,6 +145,7 @@ app.post('/api/users', (req,res,next) => {
 
 
 app.get('/api/orders', (req,res,next) => {
+    console.log(`req: GET ${req.url}`);
     const user = req.query.user;
 
     if (!user){
@@ -92,15 +153,41 @@ app.get('/api/orders', (req,res,next) => {
         return next();
     }
 
-    
-
-    res.status(500).send('not really implemented yet');
-    return next();
+    db('User_Orders').where('userid',user).select('orderid','items','amounts','total_price')
+        .then( data => {
+            if (data.length === 0) {
+                res.status(200).send(data);
+                return next();
+            } else {
+                data = data.map(order => {
+                    let newObject = {
+                        orderid: '',
+                        total_price: 0,
+                        items: []
+                    };
+                    newObject.orderid = order.orderid;
+                    newObject.total_price = order.total_price;
+                    const items = order.items.split(',');
+                    const amounts = order.amounts.split(',');
+                    newObject.items =[];
+                    for (let i=0; i<items.length; i++){
+                        newObject.items = [...newObject.items, {name: items[i], amount: amounts[i]}];
+                    }
+                    return newObject;
+                })
+                res.status(200).send(data);
+                return next();
+            }
+        })
+        .catch(err => {
+            console.log(err.message);
+            res.status(500).send('An error occured');
+            return next();
+        });
 });
 
 app.post('/api/orders', (req,res,next) => {
     console.log(`req: POST ${req.url}`);
-    console.log(`body: ${JSON.stringify(req.body.data)}`);
     const user = req.body.data.user;
     const items = req.body.data.items;
 

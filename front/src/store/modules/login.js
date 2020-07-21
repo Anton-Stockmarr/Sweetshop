@@ -30,27 +30,23 @@ const loginModule = {
     }
   },
   actions: {
-    login({ dispatch, commit }, email) {
+    login({ dispatch }, email) {
       axios.get(`http://localhost:3000/api/users?email=${email}`)
         .then(response => {
           dispatch('resolveLogin', { id: response.data.id, adminStatus: false});
         })
         .catch(error => {
-          if (error.response) {
-            commit('setError',{ name: 'signInError', message: error.response.data});
-          }
+          dispatch('handleLoginError', {error: error, errorName: 'signInError' });
       });
     },
-    signUp({ dispatch, commit }, { email, name }){
+    signUp({ dispatch }, { email, name }){
       axios.post(`http://localhost:3000/api/users?email=${email}&name=${name}`)
         .then(response => {
           dispatch('resolveLogin', { id: response.data.id, adminStatus: false});
         })
         .catch(error => {
-          if (error.response) {
-            commit('setError',{ name: 'signUpError', message: error.response.data});
-          }
-        });
+          dispatch('handleLoginError', {error: error, errorName: 'signUpError' });
+      });
     },
     adminLogin({ dispatch }) {
       dispatch('resolveLogin', { id: '', adminStatus: true});
@@ -60,6 +56,13 @@ const loginModule = {
       commit('setLoggedIn', true);
       commit('clearErrors');
       Router.push({ path: `/home` });
+    },
+    handleLoginError({ commit }, { error, errorName } ) {
+      if (error.response) {
+          commit('setError', { name: errorName, message: error.response.data });
+      } else {
+          commit('setError', { name: errorName, message: 'Server not responding' });
+      }
     }
   },
   getters: {
