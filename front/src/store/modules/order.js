@@ -60,7 +60,7 @@ const orderModule = {
         changeCurrentOrder({ commit, getters }, { changedItem, amount }){
             if (amount > 0) {
                 // From item module
-                commit('increaseItemQuantity', { id: changedItem.id, amount: -amount});
+                commit('decreaseItemQuantity', { id: changedItem.id, amount: amount});
                 
                 commit('addToOrder', { newItem: changedItem, amount: amount });
                 commit('clearError', 'changeOrderError');
@@ -70,7 +70,7 @@ const orderModule = {
                     commit('setError', { name: 'changeOrderError', message: 'Tried to remove more than was in the order'});
                 } else {
                     // From item module
-                    commit('decreaseItemQuantity', { id: changedItem.id, amount: -amount});
+                    commit('increaseItemQuantity', { id: changedItem.id, amount: -amount});
 
                     commit('removeFromOrder', { changedItem: changedItem, amount: -amount });
                     commit('clearError', 'changeOrderError');
@@ -99,7 +99,11 @@ const orderModule = {
         },
         handleOrderError({ commit }, { error, errorName }) {
             if (error.response) {
-                commit('setError',{ name: errorName, message: error.response.data});
+                if (error.response.status === 404) {
+                    commit('setError', { name: errorName, message: 'Unable to receive data from server' });
+                } else {
+                    commit('setError',{ name: errorName, message: error.response.data});
+                }
             } else {
                 commit('setError',{ name: errorName, message: 'Server not responding' });
             }

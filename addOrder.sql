@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE addOrder(userId INTEGER, INOUT orderId INTEGER DEFAULT NULL)
 AS $$
 DECLARE
-  order_time TIME :=NOW();
+  order_time DATE :=CURRENT_DATE;
 BEGIN
 INSERT INTO "Orders" VALUES(DEFAULT, userId, order_time)
 RETURNING "Orders"."id" INTO orderId;

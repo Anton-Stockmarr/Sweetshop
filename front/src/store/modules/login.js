@@ -1,5 +1,5 @@
-import Router from '../../router'
 import axios from 'axios'
+import router from '../../router';
 
 const loginModule = {
   state: {
@@ -55,13 +55,25 @@ const loginModule = {
       commit('setUser', {id: id, adminStatus: adminStatus});
       commit('setLoggedIn', true);
       commit('clearErrors');
-      Router.push({ path: `/home` });
+      router.push('/home');
+    },
+    logout({ commit }) {
+      commit('setUser', {id: '', adminStatus: false});
+      commit('setLoggedIn', false);
+      commit('clearErrors');
+      router.push('/login');
     },
     handleLoginError({ commit }, { error, errorName } ) {
       if (error.response) {
+        if (error.response.status === 404) {
+          commit('setError', { name: errorName, message: 'Unable to receive data from server' });
+        } else if (error.response.status === 409) {
+          commit('setError', { name: errorName, message: 'User already exists' });
+        } else {
           commit('setError', { name: errorName, message: error.response.data });
+        }
       } else {
-          commit('setError', { name: errorName, message: 'Server not responding' });
+        commit('setError', { name: errorName, message: 'Server not responding' });
       }
     }
   },

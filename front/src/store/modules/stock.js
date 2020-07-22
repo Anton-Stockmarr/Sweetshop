@@ -7,7 +7,7 @@ const stockModule = {
         errors: {
             loadItemsError: '',
             addItemError: '',
-            removeItemError: '',
+            archiveItemError: '',
             changeQuantityError: ''
         }
     },
@@ -18,13 +18,13 @@ const stockModule = {
         addItem(state, item) {
             state.items = [...state.items,item];
         },
-        removeItem(state, id){
+        archiveItem(state, id){
             state.items = state.items.filter( item => item.id !== id);
         },
         setItemQuantity(state, { id, quantity }) {
             let item = state.items.find(item => item.id === id);
             if (item) {
-                item.quantity += quantity;
+                item.quantity = quantity;
             }
         },
         increaseItemQuantity(state, { id, amount }) {
@@ -54,13 +54,13 @@ const stockModule = {
                 commit('clearError', 'loadItemsError');
             })
             .catch(error => {
-                dispatch('handleStockError', {error: error, errorName: 'removeItemError' });
+                dispatch('handleStockError', {error: error, errorName: 'loadItemsError' });
             });
     },
         changeItemQuantity({ commit, dispatch }, { id, quantity }){
-            return axios.post(`http://localhost:3000/api/items/quantity?item=${id}&quantity=${quantity}`)
+            return axios.put(`http://localhost:3000/api/items/quantity?item=${id}&quantity=${quantity}`)
                 .then( () => {
-                        commit('SetItemQuantity', { id: id, quantity: quantity });
+                        commit('setItemQuantity', { id: id, quantity: quantity });
                         commit('clearError', 'changeQuantityError');
                 })
                 .catch(error => {
@@ -80,19 +80,23 @@ const stockModule = {
                     dispatch('handleStockError', {error: error, errorName: 'addItemError' });
                 });
         },
-        removeItem({ commit, dispatch }, id) {
-            return axios.post(`http://localhost:3000/api/items/remove?item=${id}`,)
+        archiveItem({ commit, dispatch }, id) {
+            return axios.put(`http://localhost:3000/api/items/archive?item=${id}`,)
                 .then( () => {
-                    commit('removeItem', id);
-                    commit('clearError', 'removeItemError');
+                    commit('archiveItem', id);
+                    commit('clearError', 'archiveItemError');
                 })
                 .catch(error => {
-                    dispatch('handleStockError', {error: error, errorName: 'removeItemError' });
+                    dispatch('handleStockError', {error: error, errorName: 'archiveItemError' });
                 });
         },
         handleStockError({ commit }, { error, errorName } ) {
             if (error.response) {
-                commit('setError', { name: errorName, message: error.response.data });
+                if (error.response.status === 404) {
+                    commit('setError', { name: errorName, message: 'Unable to receive data from server' });
+                } else {
+                    commit('setError', { name: errorName, message: error.response.data });
+                }
             } else {
                 commit('setError', { name: errorName, message: 'Server not responding' });
             }

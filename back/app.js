@@ -11,6 +11,24 @@ function isUniqueConstraintError(err){
     return err.message.indexOf(uniqueError) !== -1;
 }
 
+function positiveQuantityConstraintError(err){
+    if (!err) return false;
+    const positiveError = `violates check constraint "Items_quantity_check"`;
+    return err.message.indexOf(positiveError) !== -1;
+}
+
+function handleInternalError(err, res, next){
+    console.log(err.message);
+    if (isUniqueConstraintError(err)){
+        res.status(409).send('duplicate key value violates unique constraint');
+    } else if (positiveQuantityConstraintError(err)){
+        res.status(400).send('Cannot order more items than there are available');
+    } else {
+        res.status(500).send("An error occured");
+    }
+    return next();
+}
+
 app.listen(port, () => {
     console.log(`database connection listening at http://localhost:${port}`);
     });
@@ -18,7 +36,7 @@ app.listen(port, () => {
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:8080");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    res.header("Access-Control-Allow-Methods", "get, post");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT");
     next();
   });
 
@@ -42,7 +60,6 @@ app.post('/api/items/add', (req,res, next) => {
         res.status(400).send('Some fields were not defined');
         return next();    
     }
-
     db('Items').returning('id').insert({
         'name': item.name,
         'description': item.description,
@@ -54,15 +71,11 @@ app.post('/api/items/add', (req,res, next) => {
             res.status(200).send(data[0].toString());
             return next();
         })
-        .catch(err => {
-            console.log(err.message);
-            res.status(500).send("An error occured");
-            return next();   
-        });
+        .catch(err => handleInternalError(err,res,next));
 });
 
 
-app.post('/api/items/remove', (req,res, next) => {
+app.put('/api/items/archive', (req,res, next) => {
     console.log(`req: POST ${req.url}`);
     const item = req.query.item;
     if (!item) {
@@ -74,19 +87,32 @@ app.post('/api/items/remove', (req,res, next) => {
             res.status(200).send();
             return next();
         })
-        .catch(err => {
-            console.log(err.message);
-            res.status(500).send("An error occured");
-            return next();
-        });
+        .catch(err => handleInternalError(err,res,next));
 });
 
-app.post('/api/items/quantity', (req,res, next) => {
+app.put('/api/items/quantity', (req,res, next) => {
     console.log(`req: POST ${req.url}`);
+    const item = req.query.item;
+    const quantity = req.query.quantity;
 
-
-    res.status(500).send('not implemented yet');
-    return next();
+    if (!item || !quantity){
+        res.status(400).send('Item or quantity not specified');
+        return next();
+    }
+    if (quantity < 0) {
+        res.status(400).send('Quantity must be positive');
+        return next();
+    }
+    db('Items').where('id',item).update({'quantity': quantity})
+        .then( rows => {
+            if (rows) {
+                res.status(200).send('Update successful');
+            } else {
+                res.status(404).send('Item does not exist');
+            }
+            return next();
+        })
+        .catch( err => handleInternalError(err,res,next));
 });
 
 
@@ -106,11 +132,7 @@ app.get('/api/users', (req,res,next) => {
             }
             return next();
         })
-        .catch(err => {
-            console.log(err.message);
-            res.status(500).send("An error occured");
-            return next();
-        });
+        .catch(err => handleInternalError(err,res,next));
 });
 
 app.post('/api/users', (req,res,next) => {
@@ -126,34 +148,23 @@ app.post('/api/users', (req,res,next) => {
         res.status(400).send('Invalid mail');
         return next();
     }
-
     db('Users').returning('id').insert({ 'name': name, 'email': email})
         .then( data => {
-            res.status(200).send(data);
+            res.status(200).send({id: data[0]});
             return next();
         })
-        .catch(err => {
-            console.log(err.message);
-            if (isUniqueConstraintError(err)){
-                res.status(400).send("User already exists");    
-            } else {
-                res.status(500).send("An error occured");
-            }
-            return next();   
-        });
+        .catch(err => handleInternalError(err,res,next));
 });
 
 
 app.get('/api/orders', (req,res,next) => {
     console.log(`req: GET ${req.url}`);
     const user = req.query.user;
-
     if (!user){
         res.status(400).send('Empty input');
         return next();
     }
-
-    db('User_Orders').where('userid',user).select('orderid','items','amounts','total_price')
+    db('User_Orders').where('userid',user).select('orderid','order_time','items','amounts','total_price')
         .then( data => {
             if (data.length === 0) {
                 res.status(200).send(data);
@@ -162,11 +173,15 @@ app.get('/api/orders', (req,res,next) => {
                 data = data.map(order => {
                     let newObject = {
                         orderid: '',
-                        total_price: 0,
+                        order_time: '',
+                        total_price: '',
                         items: []
                     };
                     newObject.orderid = order.orderid;
                     newObject.total_price = order.total_price;
+                    let time = order.order_time.toString();
+                    let date = time.split(' 2020',1)[0];
+                    newObject.order_time = date;
                     const items = order.items.split(',');
                     const amounts = order.amounts.split(',');
                     newObject.items =[];
@@ -179,11 +194,7 @@ app.get('/api/orders', (req,res,next) => {
                 return next();
             }
         })
-        .catch(err => {
-            console.log(err.message);
-            res.status(500).send('An error occured');
-            return next();
-        });
+        .catch(err => handleInternalError(err,res,next));
 });
 
 app.post('/api/orders', (req,res,next) => {
@@ -206,9 +217,5 @@ app.post('/api/orders', (req,res,next) => {
             res.status(200).send(result.rows[0].orderid.toString());
             return next();
             })
-        .catch( err => {
-            console.log(err.message);
-            res.status(500).send("An error occured");     
-            return next();
-        });
+        .catch(err => handleInternalError(err,res,next));
 });

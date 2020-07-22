@@ -1,24 +1,33 @@
 <template>
-    <div>
-        Items in stock
-        <div v-show="loadItemsError">{{loadItemsError}}</div>
-        <div v-show="changeOrderError">{{changeOrderError}}</div>
-        <div :key="item.id" v-for="item in items">
-            <Item v-bind="item" :itemType="'stockItem'"/>
+    <div class="customer-page">
+        <div class="navigation">
+            <Navigation :pages="this.navPages" v-on:changePage="changePage"/>
         </div>
-        In basket:
-        <div :key="`orderItem${item.id}`" v-for="item in currentOrder">
-            <Item v-bind="item" :itemType="'orderItem'"/>
+        <div class="items" v-show="currentPage===0">
+            <h1>Items in stock</h1>
+            <div v-show="loadItemsError">{{loadItemsError}}</div>
+            <div v-show="changeOrderError">{{changeOrderError}}</div>
+            <div :key="item.id" v-for="item in items">
+                <Item v-bind="item" :itemType="'stockItem'"/>
+            </div>
         </div>
-        Total price: {{currentOrderPrice}}
-        <div v-show="placeOrderError">{{placeOrderError}}</div>
-        <button @click="placeOrder">Place Order</button>
-        <button @click="toggleShowOrders">View orders</button>
-        <div v-show="loadOrdersError">
-            {{loadOrdersError}}
+        <div class="basket" v-show="currentPage===1">
+            <h1>In basket</h1>
+            <div :key="`orderItem${item.id}`" v-for="item in currentOrder">
+                <Item v-bind="item" :itemType="'orderItem'"/>
+            </div>
+            <h2>Total price: {{currentOrderPrice}}</h2>
+            <div v-show="placeOrderError">{{placeOrderError}}</div>
+            <button v-if="this.currentOrder.length!==0" @click="placeOrder">Place Order</button>
         </div>
-        <div v-show="showOrders" :key="order.orderid" v-for="order in this.orders">
-            order {{order.orderid}}, cost: {{order.total_price}} 
+        <div class="orders" v-show="currentPage===2">
+            <h1>My orders</h1>
+            <div v-show="loadOrdersError">
+                {{loadOrdersError}}
+            </div>
+            <div :key="order.orderid" v-for="order in this.orders">
+                <Order v-bind="order" /> 
+            </div>
         </div>
     </div>
 </template>
@@ -27,15 +36,19 @@
 
 <script>
 import Item from './Item'
+import Order from './Order'
+import Navigation from './Navigation'
 
 export default {
     name: 'CustomerHomePage',
     components: {
-        Item
+        Item,
+        Order,
+        Navigation
     },
     data() {
         return {
-            showOrders: false
+            currentPage: 0
         }
     },
     computed: {
@@ -49,7 +62,7 @@ export default {
             return this.$store.getters.getCurrentOrder;
         },
         currentOrderPrice() {
-            return this.currentOrder.reduce( (prev, cur) => prev + cur.quantity*cur.price, 0);
+            return this.currentOrder.reduce( (prev, cur) => prev + cur.quantity*cur.price, 0) + " EUR";
         },
         loadItemsError(){
             return this.$store.getters.getStockError('loadItemsError');
@@ -62,6 +75,9 @@ export default {
         },
         placeOrderError(){
             return this.$store.getters.getOrderError('placeOrderError');
+        },
+        navPages() {
+            return ['Items',`Basket [${this.currentOrderPrice}]`,'My orders'];
         }
     },
     mounted() {
@@ -79,8 +95,8 @@ export default {
         loadItems() {
             return this.$store.dispatch('loadItems'); 
         },
-        toggleShowOrders() {
-            this.showOrders = !this.showOrders;
+        changePage(index) {
+            this.currentPage = index;
         }
     }
 
@@ -88,5 +104,19 @@ export default {
 </script>
 
 <style>
+
+.customer-page {
+    margin-left: 200px;
+}
+
+.error {
+    color: red;
+}
+
+.basket button {
+    width: 300px;
+    height: 75px;
+    font-size: 24px;
+}
 
 </style>
