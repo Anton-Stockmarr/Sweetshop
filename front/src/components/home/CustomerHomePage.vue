@@ -5,24 +5,31 @@
         </div>
         <div class="items" v-show="currentPage===0">
             <h1>Items in stock</h1>
-            <div v-show="loadItemsError">{{loadItemsError}}</div>
-            <div v-show="changeOrderError">{{changeOrderError}}</div>
+            <div class="error" v-show="loadItemsError">
+                {{loadItemsError}}
+            </div>
             <div :key="item.id" v-for="item in items">
                 <Item v-bind="item" :itemType="'stockItem'"/>
             </div>
         </div>
         <div class="basket" v-show="currentPage===1">
             <h1>In basket</h1>
+            <div class="error" v-show="changeOrderError">
+                {{changeOrderError}}
+            </div>
+            <div class="error" v-show="placeOrderError">
+                {{placeOrderError}}
+            </div>
+            <div class="orderPlaced" v-if="orderPlaced">Your order has been placed!</div>
             <div :key="`orderItem${item.id}`" v-for="item in currentOrder">
                 <Item v-bind="item" :itemType="'orderItem'"/>
             </div>
             <h2>Total price: {{currentOrderPrice}}</h2>
-            <div v-show="placeOrderError">{{placeOrderError}}</div>
             <button v-if="this.currentOrder.length!==0" @click="placeOrder">Place Order</button>
         </div>
         <div class="orders" v-show="currentPage===2">
             <h1>My orders</h1>
-            <div v-show="loadOrdersError">
+            <div class="error" v-show="loadOrdersError">
                 {{loadOrdersError}}
             </div>
             <div :key="order.orderid" v-for="order in this.orders">
@@ -65,16 +72,19 @@ export default {
             return this.currentOrder.reduce( (prev, cur) => prev + cur.quantity*cur.price, 0) + " EUR";
         },
         loadItemsError(){
-            return this.$store.getters.getStockError('loadItemsError');
+            return this.$store.getters.getError('loadItemsError');
         },
         loadOrdersError(){
-            return this.$store.getters.getOrderError('loadOrdersError');
+            return this.$store.getters.getError('loadOrdersError');
         },
         changeOrderError(){
-            return this.$store.getters.getOrderError('changeOrderError');
+            return this.$store.getters.getError('changeOrderError');
         },
         placeOrderError(){
-            return this.$store.getters.getOrderError('placeOrderError');
+            return this.$store.getters.getError('placeOrderError');
+        },
+        orderPlaced(){
+            return this.$store.getters.getOrderPlaced;
         },
         navPages() {
             return ['Items',`Basket [${this.currentOrderPrice}]`,'My orders'];
@@ -118,5 +128,11 @@ export default {
     height: 75px;
     font-size: 24px;
 }
+
+.orderPlaced {
+    color: #6BBAA7;
+    font-size: 24px;
+}
+
 
 </style>

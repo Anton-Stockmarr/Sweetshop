@@ -6,28 +6,15 @@ const loginModule = {
     userId: '',
     adminStatus: false,
     loggedIn: false,
-    errors: {
-      signInError: '',
-      signUpError: '',
-      adminSignInError: ''
-    }
   },
   mutations: {
     setUser(state, { id, adminStatus }){
       state.adminStatus = adminStatus;
       state.userId = id;
     },
-    setError(state, { name, message }) {
-        state.errors[name] = message;
-    },
     setLoggedIn(state, loggedIn){
       state.loggedIn = loggedIn;
     },
-    clearErrors(state) {
-      state.errors.signInError = '';
-      state.errors.signUpError = '';
-      state.errors.adminSignInError = '';
-    }
   },
   actions: {
     login({ dispatch }, email) {
@@ -51,22 +38,22 @@ const loginModule = {
     adminLogin({ dispatch }) {
       dispatch('resolveLogin', { id: '', adminStatus: true});
     },
-    resolveLogin({ commit }, {id, adminStatus}) {
+    resolveLogin({ commit, dispatch }, {id, adminStatus}) {
       commit('setUser', {id: id, adminStatus: adminStatus});
       commit('setLoggedIn', true);
-      commit('clearErrors');
+      dispatch('clearLoginErrors');
       router.push('/home');
     },
-    logout({ commit }) {
+    logout({ commit, dispatch }) {
       commit('setUser', {id: '', adminStatus: false});
       commit('setLoggedIn', false);
-      commit('clearErrors');
+      dispatch('clearLoginErrors');
       router.push('/login');
     },
-    handleLoginError({ commit }, { error, errorName } ) {
+    handleLoginError({ commit, dispatch }, { error, errorName } ) {
       if (error.response) {
         if (error.response.status === 404) {
-          commit('setError', { name: errorName, message: 'Unable to receive data from server' });
+          dispatch('setError', { name: errorName, message: 'User does not exist' });
         } else if (error.response.status === 409) {
           commit('setError', { name: errorName, message: 'User already exists' });
         } else {
@@ -86,9 +73,6 @@ const loginModule = {
     },
     getLoggedIn(state){
       return state.loggedIn;
-    },
-    getLoginError(state) {
-      return name => state.errors[name];
     },
   }
 };

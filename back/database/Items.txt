@@ -1,0 +1,16 @@
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Wine Gums,Chewy pieces in the form of bears,20,EUR,200
+Lolipop,Sugar on a stick,EUR,2,10
+Stroopwaffel,Here is an unneccessary long description to show what happens when the descriptions are too long like this one obviously is,EUR,100,1
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350
+Candyfloss,Sweet and tasty sugar,12,EUR,350

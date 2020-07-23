@@ -5,9 +5,17 @@
         </div>
         <div v-show="currentPage === 0">
             <h1>
-                Items in stock:
+                Items in stock
             </h1>
-            <div v-show="loadItemsError">{{loadItemsError}}</div>
+            <div v-show="loadItemsError">
+                {{loadItemsError}}
+            </div>
+            <div v-show="archiveItemError">
+                {{archiveItemError}}
+            </div>
+            <div v-show="changeQuantityError">
+                {{changeQuantityError}}
+            </div>
             <div :key="item.id" v-for="item in items">
                 <Item v-bind="item" :itemType="'stockItem'"/>
             </div>
@@ -16,14 +24,22 @@
             </h2>
         </div>
         <div v-show="currentPage === 1">
-            Add Item:
-            <div v-show="addItemError">{{addItemError}}</div>
-            <input v-model="newItem.name" type="text" placeholder="name">
-            <input v-model="newItem.description" type="text" placeholder="description">
-            <input v-model.number="newItem.price" type="number" placeholder="price">
-            <input v-model="newItem.currency" type="text" placeholder="currency">
-            <input v-model.number="newItem.quantity" type="number" placeholder="quantity">
-            <button @click="addItem">submit</button>
+            <h1>
+                Add item
+            </h1>
+            <div v-show="addItemError">
+                {{addItemError}}
+            </div>
+            <div class="form">
+                <input v-model="newItem.name" type="text" placeholder="name" maxlength="50">
+                <input v-model="newItem.description" type="text" placeholder="description" maxlength="200">
+                <input v-model.number="newItem.price" type="number" placeholder="price">
+                <select v-model="newItem.currency">
+                    <option value="EUR">EUR</option>
+                </select>
+                <input v-model.number="newItem.quantity" type="number" placeholder="quantity">
+                <button @click="addItem">submit</button>
+            </div>
         </div>
     </div>
 </template>
@@ -50,7 +66,7 @@ export default {
                 name: '',
                 description: '',
                 price: null,
-                currency: '',
+                currency: 'EUR',
                 quantity: null
             }
         }
@@ -66,16 +82,16 @@ export default {
             return this.items.reduce( (prev, cur) => prev + cur.quantity*cur.price, 0);
         },
         loadItemsError(){
-            return this.$store.getters.getStockError('loadItemsError');
+            return this.$store.getters.getError('loadItemsError');
         },
         addItemError(){
-            return this.$store.getters.getStockError('addItemError');
+            return this.$store.getters.getError('addItemError');
         },
         archiveItemError(){
-            return this.$store.getters.getStockError('archiveItemError');
+            return this.$store.getters.getError('archiveItemError');
         },
         changeQuantityError(){
-            return this.$store.getters.getStockError('changeQuantityError');
+            return this.$store.getters.getError('changeQuantityError');
         },
     },
     methods: {
@@ -88,7 +104,7 @@ export default {
                     this.newItem.name = '';
                     this.newItem.description = '';
                     this.newItem.price = null;
-                    this.newItem.currency = '';
+                    this.newItem.currency = 'EUR';
                     this.newItem.quantity = null;
                 });
         },
@@ -99,8 +115,26 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .admin-page {
     margin-left: 200px;
 }
+
+.form {
+    margin: 0 10%;
+    background-color: #6C648B;
+    display: grid;
+    padding: 20px;
+}
+
+.form input, .form button, .form select {
+    margin: 10px 0;
+    font-size: 20px;
+    height: 40px;
+}
+
+.form button {
+    background-color: #6BBAA7;
+}
+
 </style>

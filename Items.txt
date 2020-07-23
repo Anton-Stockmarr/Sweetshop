@@ -1,2 +1,0 @@
-Candyfloss,Sweet and tasty sugar,12,EUR,350
-Wine Gums,Chewy pieces in the form of bears,20,EUR,200

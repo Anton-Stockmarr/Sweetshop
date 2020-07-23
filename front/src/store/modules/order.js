@@ -5,11 +5,7 @@ const orderModule = {
     state: {
         currentOrder: [],
         orders: [],
-        errors: {
-            loadOrdersError: '',
-            changeOrderError: '',
-            placeOrderError: ''
-        }
+        orderPlaced: false
     },
     mutations: {
         setOrders(state, orders) {
@@ -38,11 +34,8 @@ const orderModule = {
         clearCurrentOrder(state) {
             state.currentOrder = [];
         },
-        setError(state, { name, message }) {
-            state.errors[name] = message;
-        },
-        clearError(state, { name }) {
-            state.errors[name] = '';
+        setOrderPlaced(state, status) {
+            state.orderPlaced = status;
         },
     },
     actions: {
@@ -58,6 +51,7 @@ const orderModule = {
             });
         },
         changeCurrentOrder({ commit, getters }, { changedItem, amount }){
+            commit('setOrderPlaced', false);
             if (amount > 0) {
                 // From item module
                 commit('decreaseItemQuantity', { id: changedItem.id, amount: amount});
@@ -67,7 +61,7 @@ const orderModule = {
             }
             else if (amount < 0) {
                 if (!getters.getCurrentOrder.some(item => item.id === changedItem.id)){
-                    commit('setError', { name: 'changeOrderError', message: 'Tried to remove more than was in the order'});
+                    commit('setError', { name: 'changeOrderError', message: 'Tried to item that was not in the order'});
                 } else {
                     // From item module
                     commit('increaseItemQuantity', { id: changedItem.id, amount: -amount});
@@ -92,6 +86,8 @@ const orderModule = {
                 .then( () => {
                     commit('clearCurrentOrder');
                     commit('clearError', 'placeOrderError');
+                    commit('clearError', 'changeOrderError');
+                    commit('setOrderPlaced',true);
                 })
                 .catch(error => {
                     dispatch('handleOrderError', { error: error, errorName: 'placeOrderError'});
@@ -116,9 +112,9 @@ const orderModule = {
         getOrders(state){
             return state.orders;
         },
-        getOrderError(state) {
-            return name => state.errors[name];
-          },    
+        getOrderPlaced(state) {
+            return state.orderPlaced;
+        }
     }
 };
 

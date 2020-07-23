@@ -10,13 +10,13 @@
     </div>
     <div class="options">
       <input v-if="admin" v-model.number="newQuantity" placeholder="new quantity">
-      <div class="button" v-if="admin" @click="changeQuantity">Update quantity</div>
-      <div v-if="admin" class="button" @click="removeItem">Remove item</div>
+      <button v-if="admin" @click="changeQuantity">Update quantity</button>
+      <button v-if="admin" @click="removeItem">Remove item</button>
       <div class="quantity">
         {{(itemType==='stockItem' ? 'In stock:' : 'amount: ') + quantity}}
       </div>
-      <div class="button" v-show="itemType==='stockItem' && this.quantity>0 && !admin" @click="changeOrder(1)">Add</div>
-      <div class="button" v-show="itemType==='orderItem'" @click="changeOrder(-1)">Remove</div>
+      <button v-show="itemType==='stockItem' && this.quantity>0 && !admin" @click="changeOrder(1)">Add</button>
+      <button v-show="itemType==='orderItem'" @click="changeOrder(-1)">Remove</button>
     </div>
     <br>
   </div>
@@ -103,7 +103,7 @@ export default {
   font-size: 24px;
 }
 
-.options div {
+.options div, .options button {
   font-size: 18px;
   display: inline-block;
   line-height: 50px;
@@ -118,12 +118,13 @@ export default {
   font-size: 18px;
 }
 
-.button {
+button {
   cursor: pointer;
+  border: none;
   background-color: #B6A19E;
 }
 
-.button:hover {
+button:hover {
   background-color: #6C648B;
 }
 

@@ -4,7 +4,7 @@
             <div class="time">
                 {{order_time}}
             </div>
-            <div :key="index" v-for="(item, index) in this.items">
+            <div :key="index" v-for="(item, index) in items">
                 {{item.amount}}x {{item.name}}
             </div>
         </div>
@@ -22,18 +22,6 @@ export default {
     items: Array,
     total_price: Number,
     order_time: String,
-  },
-  data() {
-    return {
-      newQuantity: 0
-    }
-  },
-  computed: {
-    admin() {
-      return this.$store.getters.getAdminStatus;
-    }
-  },
-  methods: {
   }
 }
 </script>

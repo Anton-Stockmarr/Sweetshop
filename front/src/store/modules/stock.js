@@ -4,12 +4,6 @@ import axios from 'axios'
 const stockModule = {
     state: {
         items: [],
-        errors: {
-            loadItemsError: '',
-            addItemError: '',
-            archiveItemError: '',
-            changeQuantityError: ''
-        }
     },
     mutations: {
         setItems(state, items){
@@ -38,12 +32,6 @@ const stockModule = {
             if (item) {
                 item.quantity = (item.quantity >= amount) ? item.quantity - amount : 0;
             }
-        },
-        setError(state, { name, message }) {
-            state.errors[name] = message;
-        },
-        clearError(state, { name }) {
-            state.errors[name] = '';
         },
     },
     actions: {
@@ -106,9 +94,6 @@ const stockModule = {
         getItems(state){
             return state.items;
         },
-        getStockError(state) {
-            return name => state.errors[name];
-          },    
     }
 };
 
