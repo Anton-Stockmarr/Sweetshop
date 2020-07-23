@@ -44,12 +44,12 @@ app.use(function(req, res, next) {
 app.get('/api/items', (req,res, next) => {
     console.log(`req: GET ${req.url}`);
     db('Items').where('archived','FALSE').select('id','name','description','price','currency','quantity').then( data => {
-        res.send(data);
+        res.status(200).send(data);
         return next();
     });
 });
 
-app.post('/api/items/add', (req,res, next) => {
+app.post('/api/items', (req,res, next) => {
     console.log(`req: POST ${req.url}`);
     const item = req.body.data;
     if (!item){
@@ -83,8 +83,12 @@ app.put('/api/items/archive', (req,res, next) => {
         return next();
     }
     db('Items').where("id",item).update({'archived': 'TRUE'})
-        .then(() => {
-            res.status(200).send();
+        .then(rows => {
+            if (rows) {
+                res.status(200).send();
+            } else {
+                res.status(404).send('Item does not exist');
+            }
             return next();
         })
         .catch(err => handleInternalError(err,res,next));

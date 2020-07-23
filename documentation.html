@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation</title>
+</head>
+<body>
+    <h1>Documentation</h1>
+
+    <p>
+        Info about the api calls, the responses and error codes
+    </p>
+
+    <h2>/api/items</h2>
+    <h3>GET</h3>
+    <p>Description:</p>
+    <p>
+        Sends all items in stock.
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The response would be: <br>
+    [<br>
+        {<br>
+        id: 0,<br>
+        name: 'Candyfloss',<br>
+        description: 'Sweet and tasty sugar',<br>
+        price: 12,<br>
+        currency: 'EUR',<br>
+        quantity: 350 <br>
+    }<br>
+    ] <br>
+</p>
+
+    <h3>POST</h3>
+    <p>Description:</p>
+    <p>
+        Create a new item. The body should contain item details: name, description, price, currency and quantity.
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The response would be the id of the new item.</p>
+    <p>400 - bad request. If the body of the request is empty, or if some fields are not defined</p>
+
+
+    <h2>/api/items/archive</h2>
+    <h3>PUT</h3>
+
+    <p>Description:</p>
+    <p>
+        Archive an item. It is still saved in the database, but not sent in GET request. Query should have item id. Fx '/api/items/archive?item=1'.
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The item has been archived.</p>
+    <p>400 - bad request. No item specified</p>
+    <p>404 - Item was not found</p>
+
+
+
+    <h2>/api/items/quantity</h2>
+    <h3>PUT</h3>
+    <p>Description:</p>
+    <p>
+        Set a new quantity for an item. Query should contain item, and new quantity, which must be positive. Fx '/api/items/quantity?item=1&quantity=20'.
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The item has been updated.</p>
+    <p>400 - bad request. No item specified, no quantity specified, or negative quantity</p>
+    <p>404 - Item was not found</p>
+
+
+
+    <h2>/api/users</h2>
+    <h3>GET</h3>
+
+    <p>Description:</p>
+    <p>
+        Gets the id of a user. The query should specify an email. Fx '/api/users&email=example@example.com'
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The response is the id of the user.</p>
+    <p>400 - bad request. No email specified</p>
+    <p>404 - not found. User does not exist</p>
+
+    <h3>POST</h3>
+    <p>Description:</p>
+    <p>
+        Creates a new user. The query should specify an email and a name. Fx '/api/users&email=example@example.com&name=john'
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The user was created The response is the id of the new user.</p>
+    <p>400 - bad request. No email or no name specified, or invalid email</p>
+    <p>409 - duplicate entry. User already exists</p>
+
+
+    <h2>/api/orders</h2>
+    <h3>GET</h3>
+    <p>Description:</p>
+    <p>
+        Get all orders placed by a user. Query needs user as input, fx '/api/orders?user=1'
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The response could look like:</p>
+    <p>
+        [<br>
+            {<br>
+            items: {[<br>
+                amount: 1,<br>
+                name: 'Stroopwaffel' <br>
+                ]}, <br>
+            order_time: 'Thu Jul 23',<br>
+            orderid: 1,<br>
+            total_price: 1<br>
+        }<br>
+        ] <br>
+    </p>
+
+
+    <p>400 - bad request. No user specified.</p>
+
+
+
+    <h3>POST</h3>
+    <p>Description:</p>
+    <p>
+        Place order. The input should be a userId, together with a list of itemId's in the body.'
+    </p>
+
+    <p>Response:</p>
+    <p>200 - ok. The response is the new orderId</p>
+    <p>400 - bad request. No user or no items specified. The list of items cannot be empty</p>
+
+
+
+
+
+</body>
+</html>

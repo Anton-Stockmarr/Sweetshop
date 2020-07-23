@@ -56,7 +56,7 @@ const stockModule = {
                 });
         },
         addItem({ commit, dispatch }, item) {
-            return axios.post(`http://localhost:3000/api/items/add`, { data: item })
+            return axios.post(`http://localhost:3000/api/items`, { data: item })
                 .then(response => {
                     // deep copy of item
                     let addedItem = JSON.parse(JSON.stringify(item));
